@@ -9,18 +9,28 @@ export const getFilteredImage = async (req: Request, res: Response) => {
   const { image_url } = req.query;
 
   if (image_url) {
-    // Get filtered image
-    const filteredImage = await filterImageFromURL(image_url);
+    try {
+      // Get filtered image
+      const filteredImage = await filterImageFromURL(image_url);
 
-    // Send filtered image in response
-    res.sendFile(filteredImage);
+      const imageArray = [];
+      imageArray.push(filteredImage);
 
-    const imageArray = [];
-    imageArray.push(filteredImage);
+      // Send filtered image in response
+      res.sendFile(filteredImage);
 
-    // Delete image from server after response is sent
-    deleteLocalFiles(imageArray);
+      // Delete image from server after response is sent
+      deleteLocalFiles(imageArray);
+    } catch (err) {
+      return res
+        .status(500)
+        .send(
+          "There was an error processing your image. Please make sure the URL you provided is valid."
+        );
+    }
+  } else {
+    return res
+      .status(400)
+      .send("Please submit a valid image URL in your request.");
   }
-
-  return res.status(400).send("Please submit the image URL in your request");
 };
