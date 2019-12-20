@@ -13,14 +13,16 @@ export const getFilteredImage = async (req: Request, res: Response) => {
       // Get filtered image
       const filteredImage = await filterImageFromURL(image_url);
 
-      const imageArray = [];
+      const imageArray: Array<string> = [];
       imageArray.push(filteredImage);
 
       // Send filtered image in response
       res.sendFile(filteredImage);
 
       // Delete image from server after response is sent
-      deleteLocalFiles(imageArray);
+      res.on("finish", () => {
+        deleteLocalFiles(imageArray);
+      });
     } catch (err) {
       return res
         .status(500)
@@ -30,7 +32,7 @@ export const getFilteredImage = async (req: Request, res: Response) => {
     }
   } else {
     return res
-      .status(400)
+      .status(422)
       .send("Please submit a valid image URL in your request.");
   }
 };
